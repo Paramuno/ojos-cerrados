@@ -10,7 +10,7 @@ Cómo ver con los ojos cerrados
 > o `ritmo | ruido | immediatez | encantamiento | cosmotécnica | rito | juego | gesto | textura temporal`
 > o `prototipo | deuterotipo | modelado | clonado | predicción | simulación | continuo no-estándar | resolución | correlación | corrección | (¿␚?)`
 
-![Image 1](/images/Doa5.png)
+![Image 1](/images/Doa3.png)
 
 Interface
 
