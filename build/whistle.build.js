@@ -109,11 +109,17 @@ module.exports = function whistlerr(whistleCallback, config) {
 
 	var audioContext
 
+  // One-liner to resume playback when user interacted with the page.
+document.querySelector('button').addEventListener('click', function() {
+  context.resume().then(() => {
+    console.log('Playback resumed successfully');
+  });
+
 	// getUserMedia is prefixed a little differently in various browsers. handle these
 	function getUserMedia(dictionary, callback, error)
 	{
 	  try {
-	    navigator.getUserMedia = 
+	    navigator.getUserMedia =
 	    navigator.getUserMedia ||
 	    navigator.webkitGetUserMedia ||
 	    navigator.mozGetUserMedia;
