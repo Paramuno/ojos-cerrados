@@ -52,7 +52,7 @@ function setup() {
 windowWidth *= .5
 windowHeight *= .5
 document.querySelector('meta[name="viewport"]').content = "initial-scale=0.5"
-  }
+}
   createCanvas(windowWidth, windowHeight - 4)
   texShader = createGraphics(windowWidth, windowHeight - 4, WEBGL)
   texShader1 = createGraphics(windowWidth, windowHeight - 4, WEBGL)
@@ -75,6 +75,7 @@ document.querySelector('meta[name="viewport"]').content = "initial-scale=0.5"
   angleMode(DEGREES) // for the floaters rotations
   getAudioContext().suspend()
   noStroke()
+
   let cw = (width / 2),
     ch = (height / 2)
   bpointArray.push(new Bpoint(true, createVector(cw, ch - 50), createVector(cw, ch - 50), createVector(cw - 75, ch - 50), 0))
@@ -140,7 +141,8 @@ function draw() {
   if (getAudioContext().state !== 'running') { // If audio context is running
     drawTitle()
   } else {
-    (height < (width * 1.4)) ? drawShader(): background(38, 29, 29)
+    //(height < (width * 1.4)) ? drawShader(): background(38, 29, 29)
+    drawShader()
     imageMode(CENTER)
     for (let i = 0; i < floaters.length; i++) { //drawing all floaters in the array
       drawFloaters(floaters[i], i * 100, i) //passing floaterimg noiseseed and index
