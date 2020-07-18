@@ -141,8 +141,8 @@ function draw() {
   if (getAudioContext().state !== 'running') { // If audio context is running
     drawTitle()
   } else {
-    //(height < (width * 1.4)) ? drawShader(): background(38, 29, 29)
-    drawShader()
+    (height < (width * 1.4)) ? drawShader(): background(38, 29, 29)
+    //drawShader()
     imageMode(CENTER)
     for (let i = 0; i < floaters.length; i++) { //drawing all floaters in the array
       drawFloaters(floaters[i], i * 100, i) //passing floaterimg noiseseed and index
