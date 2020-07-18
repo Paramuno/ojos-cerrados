@@ -70,13 +70,15 @@ function setup() {
   angleMode(DEGREES) // for the floaters rotations
   getAudioContext().suspend()
   noStroke()
-  let cw = (width / 2), ch = (height / 2)
-  bpointArray.push(new Bpoint(true, createVector(cw - 200, ch - 50), createVector(cw - 125, ch - 50), createVector(cw - 275, ch - 50), 0))
-  bpointArray.push(new Bpoint(true, createVector(cw - 200, ch + 50), createVector(cw - 275, ch + 50), createVector(cw - 125, ch + 50), 1))
-  bpointArray.push(new Bpoint(true, createVector(cw + 200, ch + 50), createVector(cw + 125, ch + 50), createVector(cw + 275, ch + 50), 2))
-  bpointArray.push(new Bpoint(true, createVector(cw + 200, ch - 50), createVector(cw + 275, ch - 50), createVector(cw + 125, ch - 50), 3))
-  for (let b of bpointArray){
-    if(b.isBase) baseArray.push(b)
+  let cw = (width / 2),
+    ch = (height / 2)
+  bpointArray.push(new Bpoint(true, createVector(cw, ch - 50), createVector(cw, ch - 50), createVector(cw - 75, ch - 50), 0))
+  bpointArray.push(new Bpoint(true, createVector(cw, ch + 50), createVector(cw - 75, ch + 50), createVector(cw, ch + 50), 1))
+  bpointArray.push(new Bpoint(true, createVector(cw, ch + 50), createVector(cw, ch + 50), createVector(cw + 75, ch + 50), 2))
+  bpointArray.push(new Bpoint(true, createVector(cw, ch - 50), createVector(cw + 75, ch - 50), createVector(cw, ch - 50), 3))
+
+  for (let b of bpointArray) {
+    if (b.isBase) baseArray.push(b)
   }
   sound = new p5.AudioIn()
   sound.start()
@@ -100,7 +102,6 @@ function setup() {
     clampedvBuffer.push(0)
   }
   spectralCentroid = 600 // initializing variable to pass to shader before sound is fftanalyzed
-
   init24knots() // initializing all knots for immediate functionality
 
   // Volume and Hz sliders
@@ -121,34 +122,18 @@ function init24knots() {
   for (let i = 0; i < 10; i++) {
     bpointArray.splice(prevactiveBezier.index + 1, 0, new Bpoint(false, createVector(cw - 0, ch + 50),
       createVector(cw - 0, ch + 50), createVector(cw - 0, ch + 50), i + activeBezier.index))
-  }
-  for (let i = 0; i < 10; i++) {
     bpointArray.push(new Bpoint(false, createVector(cw - 0, ch - 50), createVector(cw - 0, ch - 50),
       createVector(cw - 0, ch - 50), bpointArray.length))
   }
   for (let i = 0; i < bpointArray.length; i++) { //updatinng indexes
     bpointArray[i].index = i
   }
-  print("current Bpoints:" + bpointArray.length)
+  //print("current Bpoints:" + bpointArray.length)
 }
 
 function draw() {
   if (getAudioContext().state !== 'running') { // If audio context is running
-    background(38, 29, 29)
-    textFont('ubuntu')
-    textSize(width / 50)
-    textAlign(CENTER)
-    fill(255)
-    text('🎤 Click para activar micrófono, silba para navegar', width / 2, height / 2)
-    textSize(width / 24)
-    fill(105, 2, 2)
-    text('Cómo ver con los ojos cerrados', (width / 2) + txRwalk, (height * .45) + tyRwalk)
-    textSize(width / 24.2)
-    fill(255, 175)
-    text('Cómo ver con los ojos cerrados', (width / 2), (height * .45))
-    let fac = .15
-    txRwalk += map(random(), 0, 1, -fac, fac)
-    tyRwalk += map(random(), 0, 1, -fac, fac)
+    drawTitle()
   } else {
     (height < (width * 1.4)) ? drawShader(): background(38, 29, 29)
     imageMode(CENTER)
@@ -158,22 +143,18 @@ function draw() {
     drawBezier()
     drawAttractor()
     for (let w of whistlingArray) { // Checking if there's any whistling in the buffer
-      if (w > 0) {
-        whistling = true
-      }
+      if (w > 0) whistling = true
     }
     whistlingArray.push(0) // cleaning Buffer
     whistlingArray.shift()
-    if (height < (width * 1.4)) { // detecting mobile devices by aspect ratio
-      drawShader1() // after checking for whistling, drawShader1
-    }
+    if (height < (width * 1.4)) drawShader1()
     if (whistling && !loosening) {
       spectrum = fft.analyze()
       spectralCentroid = fft.getCentroid()
       fill(255)
       textSize(15)
       sqInterpolatebpointArray2D(testknots)
-      drawKeywords2D(true, chooseKeywords2D())
+      drawKeywords2D(true, floor(random(keyWords[zone2D].s.length)))
       whistling = false // reset whistling
     } else if (looseknot) { // if lknot active
       interpolatetoLooseKnot(loosejson) // interpolate until the knot is loose
@@ -182,6 +163,24 @@ function draw() {
     drawFoundtext2D()
     //print('amp:' + sound.getLevel())
   }
+}
+
+function drawTitle() {
+  background(38, 29, 29)
+  textFont('ubuntu')
+  textSize(width / 50)
+  textAlign(CENTER)
+  fill(255)
+  text('🎤 Click para activar micrófono, silba para navegar', width / 2, height / 2)
+  textSize(width / 24)
+  fill(105, 2, 2)
+  text('Cómo ver con los ojos cerrados', (width / 2) + txRwalk, (height * .45) + tyRwalk)
+  textSize(width / 24.2)
+  fill(255, 175)
+  text('Cómo ver con los ojos cerrados', (width / 2), (height * .45))
+  let fac = .15
+  txRwalk += map(random(), 0, 1, -fac, fac)
+  tyRwalk += map(random(), 0, 1, -fac, fac)
 }
 
 function drawShader() {
@@ -207,12 +206,7 @@ function drawShader1() {
   hyp1.setUniform('u_mouse', [.4, .2])
   hyp1.setUniform('u_mousestrength', .0135)
   hyp1.setUniform('tex0', sourceCanvas);
-  if (whistling) {
-    hyp1.setUniform('u_splash', 2.) // >1 is true less is false, this controls the mouse generator display
-  } else {
-    hyp1.setUniform('u_splash', .5)
-  }
-
+  hyp1.setUniform('u_splash', (whistling) ? 2. : .5)
   texShader1.rect(0, 0, width, height)
   sourceCanvas.image(texShader1, 0, 0, width, height)
   blendMode(SCREEN)
@@ -234,10 +228,10 @@ function Bpoint(basestatus, pos, h1pos, h2pos, index) {
 }
 
 function drawBezier() {
-  stroke(201, 255, 250);
-  strokeWeight(10);
+  stroke(201, 255, 250)
+  strokeWeight(10)
   noFill()
-  beginShape();
+  beginShape()
   for (let i = 0; i < bpointArray.length - 1; i++) { // Draw bezier
     bezier(bpointArray[i].location.x, bpointArray[i].location.y, //anchor1
       bpointArray[i].h2location.x, bpointArray[i].h2location.y, //control1
@@ -248,8 +242,7 @@ function drawBezier() {
     bpointArray[bpointArray.length - 1].h2location.x, bpointArray[bpointArray.length - 1].h2location.y,
     bpointArray[0].h1location.x, bpointArray[0].h1location.y,
     bpointArray[0].location.x, bpointArray[0].location.y)
-  endShape();
-  // drawCurve(tempBezier) // drawcurve function that uses ctxCanvas instead
+  endShape()
 }
 
 function updatebpointArray(json) {
@@ -266,32 +259,21 @@ function updatebpointArray(json) {
     }
     baseArray.length = 0 //emptying base Array
     for (i = 0; i < bpointArray.length; i++) { // filling with new bases
-      if (bpointArray[i].isBase) {
-        baseArray.push(bpointArray[i])
-      }
+      if (bpointArray[i].isBase) baseArray.push(bpointArray[i])
     }
   } else { // consoleprint the number of bpoints required
     print("add Bpoints:" + bpointArray.length + "/" + Object.keys(json).length)
   }
 }
 
-function chooseKeywords2D() {
-  let choice
-  if (zone2D != undefined) { //if currC is defined, choose a random between 0 and the length of currC keyword array
-    choice = floor(random(keyWords[zone2D].s.length)) // choose a random id between the available ids in the current Compartment keyword array
-    //print(keyWords[zone2D].s.length,choice)
-  }
-  return choice
-}
-
 function drawFloaters(floater, seedOffset, index) { // drawing them floaters
   push()
-  let floX = noise(seed1 + seedOffset);
-  floX = map(floX, 0, 1, -100, width + 100); //map nise to canvas size
-  let floY = noise(seed2 + seedOffset);
-  floY = map(floY, 0, 1, -100, height + 100);
-  seed1 += .00017; //move in noisespace
-  seed2 += .00017;
+  let floX = noise(seed1 + seedOffset)
+  floX = map(floX, 0, 1, -100, width + 100) //map nise to canvas size
+  let floY = noise(seed2 + seedOffset)
+  floY = map(floY, 0, 1, -100, height + 100)
+  seed1 += .00017 //move in noisespace
+  seed2 += .00017
   translate(floX, floY) // translate by xy noisypos
   rotate(floRots[index]) // rotate by rotationsarray
   floRots[index] += map(noise(seed1), 0, 1, -.4, .4) // adding a noisy ammount to rotationsarray
@@ -302,9 +284,7 @@ function drawFloaters(floater, seedOffset, index) { // drawing them floaters
 function drawKeywords2D(arewewhistling, choose) {
   // Choose randomly between set depending on zone2D and display them
   // Display also all texts where that word is found, let the user choose one
-  if (choose != undefined) { // safety feature
-    chosenWordBuffer = choose
-  }
+  if (choose != undefined) chosenWordBuffer = choose
   textSize(height / 30)
   fill(200)
   noStroke()
@@ -368,11 +348,6 @@ function sqInterpolatebpointArray2D(jsonArray) { //interpolate2D w clamping and 
   clampedvBuffer.shift()
   let avgVol = clampedvBuffer.reduce((a, b) => a + b, 0) / clampedvBuffer.length // we avg clamped 20 frames
   let vol = avgVol // pass avgVol from clampedvBuffer to vol
-  // other attempts //
-  //let vol = volumeBuffer[0] // w/o averaging
-  //let hz = centroids[0] // w/o averaging
-  // let vol = map(volS.value(), 0, 500, -.2, 2.2) // this is for use w/ slider
-  // let hz = map(hzS.value(), 0, 500, -.2, 3.2)
   let ks // Knotspace value
   let json1 // json holders
   let json2
@@ -567,8 +542,7 @@ function sqInterpolatebpointArray2D(jsonArray) { //interpolate2D w clamping and 
       finalLerp(j1lerpj2, j3lerpj4, ks)
     }
   }
-  print('zone2D:' + zone2D, 'v:' + ((round(volumeBuffer[30] * 1000)) / 1000) + '|' + ((round(vol * 1000)) / 1000),
-    'hz:' + ((round(centroids[20] * 1000)) / 1000) + '|' + ((round(hz * 1000)) / 1000)) // debug my life
+  //print('zone2D:' + zone2D, 'v:' + ((round(volumeBuffer[30] * 1000)) / 1000) + '|' + ((round(vol * 1000)) / 1000),'hz:' + ((round(centroids[20] * 1000)) / 1000) + '|' + ((round(hz * 1000)) / 1000)) // debug my life
 }
 
 function resultObj() {
@@ -659,13 +633,8 @@ function near(num1, num2, factor) {
 }
 
 function keyPressed() {
-  if (keyCode === 84) { // t
-    updatebpointArray(knotspace[0]) // immediately change location for dots to specified knot
-    print("bby")
-  }
-  if (keyCode === 76) { // l
-    looseknot = !looseknot // does the knot return to loose?
-  }
+  if (keyCode === 84) updatebpointArray(testknots[0]) //t
+  if (keyCode === 76) looseknot = !looseknot //l
 }
 
 function mousePressed() { //Activate audio, Points activate with a click before being able to drag them
@@ -677,10 +646,8 @@ function mousePressed() { //Activate audio, Points activate with a click before 
 }
 
 function windowResized() {
-  //if (height < (width * 1.4)) {
   resizeCanvas(windowWidth, windowHeight)
   sourceCanvas = createGraphics(windowWidth, windowHeight - 4) // reinitializing sourceCanvas graphics so that shader1 is updated to new windowSize
-  //  }
 }
 // Shader reference by Pierre MARZIN
 const frag = `
