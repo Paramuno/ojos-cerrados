@@ -48,6 +48,11 @@ function preload() {
 let gl, noctaves, c, sourceCanvas
 
 function setup() {
+  if (windowHeight > (windowWidth * 1.4)){
+windowWidth *= .5
+windowHeight *= .5
+//document.querySelector('meta[name="viewport"]').content = "initial-scale=1.0"
+  }
   createCanvas(windowWidth, windowHeight - 4)
   texShader = createGraphics(windowWidth, windowHeight - 4, WEBGL)
   texShader1 = createGraphics(windowWidth, windowHeight - 4, WEBGL)
