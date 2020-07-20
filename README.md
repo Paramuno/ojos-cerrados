@@ -11,7 +11,7 @@ x | INDEX
 x | Agradecimientos
 x | Gesto performático
 x | Anexos
-x | [Archivo](http://👽🔥.ml)*
+x | [Archivo](http://👽🔥.ml)
 > `manejo del tiempo | orientación corporal | futuralidad | indeterminación, irreversibilidad, perduración`
 > o `sujeto | producción | ethos | askesis | intención | decisión | telos | prescripción | entrenamiento`
 > o `silbido| ecolocación | PATH | instrumentalización | repercusión | retroalimentacióm | inefabilidad`
