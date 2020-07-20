@@ -47,33 +47,14 @@ function preload() {
 
 //Shaders variables
 let gl, noctaves, c, sourceCanvas, lifeSeed
-let saladmode = true
+let saladmode = false
 
 function setup() {
-  if (windowHeight > (windowWidth * 1.4)) {
     windowWidth *= .5
     windowHeight *= .5
     document.querySelector('meta[name="viewport"]').content = "initial-scale=0.5"
-  }
   createCanvas(windowWidth, windowHeight - 4)
-  texShader = createGraphics(windowWidth, windowHeight - 4, WEBGL)
-  texShader1 = createGraphics(windowWidth, windowHeight - 4, WEBGL)
-  sourceCanvas = createGraphics(windowWidth, windowHeight - 4) // shader 1 needs a canvas to draw pixels from, current canvas effect would be too ugly so we make an empty one
   texShader2 = createGraphics(windowWidth, windowHeight - 4, WEBGL)
-  gl = texShader.canvas.getContext('webgl')
-  gl.disable(gl.DEPTH_TEST)
-  noctaves = 5 // noise octaves def5
-  c = []
-  for (var i = 0; i < 22; i++) {
-    c[i] = random(-5, 5); // blob matrix
-  }
-  hyp = new p5.Shader(texShader._renderer, vert, frag) // Using live shader (fluid colors)
-  texShader.shader(hyp) // loading shader into Graphics buffer
-  texShader.noStroke()
-  ///
-  hyp1 = new p5.Shader(texShader1.renderer, vert1, frag1) // Using the 2nd live shader (blurry lights)
-  texShader1.noStroke()
-  sourceCanvas.background(0)
   ///
   conway = new p5.Shader(texShader2._renderer, vert2, frag2) // Conway titlepage shader
   texShader2.background(0)
@@ -123,15 +104,6 @@ function setup() {
   }
   spectralCentroid = 600 // initializing variable to pass to shader before sound is fftanalyzed
   init24knots() // initializing all knots for immediate functionality
-
-  // Volume and Hz sliders
-  // volS = createSlider(0, 500, 0, 0)
-  // volS.position(10, 10, 0, 0)
-  // volS.style('width', '800px')
-  // hzS = createSlider(0, 500, 0, 0)
-  // hzS.position(10, 50, 0, 0)
-  // hzS.style('width', '800px')
-  //console.clear()
 }
 
 function init24knots() {
@@ -155,8 +127,7 @@ function draw() {
   if (getAudioContext().state !== 'running') { // If audio context is running
     drawTitle()
   } else if (!saladmode) {
-    (height < (width * 1.4)) ? drawShader(): background(38, 29, 29)
-    //drawShader()
+    background(38, 29, 29)
     imageMode(CENTER)
     for (let i = 0; i < floaters.length; i++) { //drawing all floaters in the array
       drawFloaters(floaters[i], i * 100, i) //passing floaterimg noiseseed and index
@@ -168,7 +139,6 @@ function draw() {
     }
     whistlingArray.push(0) // cleaning Buffer
     whistlingArray.shift()
-    if (height < (width * 1.4)) drawShader1()
     if (whistling && !loosening) {
       spectrum = fft.analyze()
       spectralCentroid = fft.getCentroid()
@@ -182,7 +152,6 @@ function draw() {
       drawKeywords2D(false, chosenWordBuffer) // use the last randomly chosen word
     }
     drawFoundtext2D()
-    //print('amp:' + sound.getLevel())
   } else {
     wordSalad()
   }
@@ -294,37 +263,6 @@ micrófono
   🔇`, width - 100, height - 100)
   fill(255, 240, 240, 10)
   circle(width, height, 500)
-}
-
-function drawShader() {
-  hyp.setUniform("iResolution", [width, height]); //pass some values to the shader
-  hyp.setUniform("iTime", millis() * .0012); // timefactor
-  hyp.setUniform('iMouse', [map(spectralCentroid, 600, 2200, 0, width), map(sound.getLevel(), 0, .02, 0, height)]); //Mapping iMouse functions to sound Hz & amp
-  hyp.setUniform("noctaves", noctaves);
-  hyp.setUniform("c", c);
-  texShader.shader(hyp);
-  texShader.box(width, height);
-  imageMode(CORNER)
-  image(texShader, 0, 0, width, height)
-  noStroke()
-  fill(30, 240) //38,33,33,250)
-  rect(0, 0, width, height) // Creating a veil that obscures shaders
-}
-
-function drawShader1() {
-  imageMode(CORNER)
-  texShader1.shader(hyp1)
-  hyp1.setUniform('u_resolution', [width, height])
-  hyp1.setUniform('u_time', millis() / 1000)
-  hyp1.setUniform('u_mouse', [.4, .2])
-  hyp1.setUniform('u_mousestrength', .0135)
-  hyp1.setUniform('tex0', sourceCanvas);
-  hyp1.setUniform('u_splash', (whistling) ? 2. : .5)
-  texShader1.rect(0, 0, width, height)
-  sourceCanvas.image(texShader1, 0, 0, width, height)
-  blendMode(SCREEN)
-  image(sourceCanvas, 0, 0)
-  blendMode(BLEND)
 }
 
 function drawShader2() {
@@ -750,11 +688,6 @@ function near(num1, num2, factor) {
   return (num1 > (num2 - factor) && num1 < (num2 + factor))
 }
 
-function keyPressed() {
-  if (keyCode === 84) updatebpointArray(testknots[0]) //t
-  if (keyCode === 76) looseknot = !looseknot //l
-}
-
 function mousePressed() { //Activate audio, Points activate with a click before being able to drag them
   if (!permissiongiven) {
     if ((mouseX > (width - 200)) && (mouseY > (height - 200))) {
@@ -773,354 +706,7 @@ function windowResized() {
   resizeCanvas(windowWidth, windowHeight)
   sourceCanvas = createGraphics(windowWidth, windowHeight - 4) // reinitializing sourceCanvas graphics so that shader1 is updated to new windowSize
 }
-// Shader reference by Pierre MARZIN
-const frag = `
 
-#ifdef GL_ES
-precision mediump float;
-#endif
-
-uniform vec2 iResolution;
-uniform vec2 iMouse;
-uniform float iTime;
-uniform int noctaves;
-uniform float c[22];
-float mousefactor;
-
-float noise( in vec2 x )
-{
-	return sin(1.5*x.x)*sin(1.5*x.y);
-}
-
-const mat2 rot = mat2( 0.80,  0.6, -0.6,  0.8 );
-float fbm ( in vec2 _st) {
-    float v = 0.0;
-    float a = 0.6;
-    vec2 shift = 10.0*vec2(c[11],c[12]);
-    for (int i = 0; i < 12; ++i) {
-		if(i>=noctaves)break;
-        v += a * noise(_st);
-        _st = rot*_st* 2.0 + shift;
-        a *= 0.5;
-    }
-    return v;
-}
-
-//manipulate b,c,s
-mat4 brightnessMatrix( float brightness )
-{
-    return mat4( 1, 0, 0, 0,
-                 0, 1, 0, 0,
-                 0, 0, 1, 0,
-                 brightness, brightness, brightness, 1 );
-}
-
-mat4 contrastMatrix( float contrast )
-{
-	float t = ( 1.0 - contrast ) / 2.0;
-
-    return mat4( contrast, 0, 0, 0,
-                 0, contrast, 0, 0,
-                 0, 0, contrast, 0,
-                 t, t, t, 1 );
-
-}
-
-mat4 saturationMatrix( float saturation )
-{
-    vec3 luminance = vec3( 0.3086, 0.6094, 0.0820 );
-
-    float oneMinusSat = 1.0 - saturation;
-
-    vec3 red = vec3( luminance.x * oneMinusSat );
-    red+= vec3( saturation, 0, 0 );
-
-    vec3 green = vec3( luminance.y * oneMinusSat );
-    green += vec3( 0, saturation, 0 );
-
-    vec3 blue = vec3( luminance.z * oneMinusSat );
-    blue += vec3( 0, 0, saturation );
-
-    return mat4( red,     0,
-                 green,   0,
-                 blue,    0,
-                 0, 0, 0, 1 );
-}
-
-const float brightness = 0.15; //def.15
-const float contrast = 1.2; //def1.2
-const float saturation = 1.5; // def1.5
-
-void main() {
-		vec2 mouse=iMouse/iResolution;
-    vec2 st =(-iResolution.xy+2.0*gl_FragCoord.xy)/iResolution.y;//(gl_FragCoord.xy/iResolution.xy);//
-    vec3 color = vec3(0.);
-    vec2 q = vec2(0.);
-
-
-    q.x = fbm( st+vec2(c[0],3.*.04*iTime) ); // def.01 is angle of movement
-    q.y = fbm( st+vec2(c[2],c[3]) );
-    vec2 r = vec2(0.);
-
-//play with the values here!
-		r.x = fbm( st+ (3.0*mouse.x+0.4)*q+vec2(c[5],c[6]));
-    r.y = fbm( st+ (6.0*mouse.y+0.5)*q*sin(.01*iTime)+vec2(c[8]*.05*iTime,c[9]));
-    float f = fbm(st+c[10]*(r+length(q) ));
-    color = smoothstep(vec3(0.101961,0.19608,0.666667),vec3(0.666667,0.666667,0.98039),color); //(0.101961,0.19608,0.666667),vec3(0.666667,0.666667,0.98039)
-
-    //color = mix(color,vec3(1.856,.05*(1.0+cos(1.5+.2*iTime)),0.164706),r.y+length(q));//
-    color = mix(color,vec3(1.,.05*(1.0+cos(1.5+.2*iTime)),0.164706),r.y+length(q));//
-
-    //color = mix(color,vec3(1.5*sin(.1*iTime),0.0,cos(.13*iTime)),length(r+q))
-    color = mix(color,vec3(1.5*sin(.2*iTime),0.0,1.2*cos(.25*iTime)),length(r+q));// titilation between colors//.2+.2*(1.0+cos(0.5+.3*iTime)) //
-
-    color = mix( color, vec3(0.9,0.9,0.9), dot(r,r) ); //def .9.9.9
-		color*=(.6*f*f*f*f+.6*f*f+.6*f); // mixing of channels def (1.5*f*f*f+1.8*f*f+1.7*f); like .6.8.6
-		color+=.4*vec3(1.8+r.x,0.7+q); // brightness def color+=.4*vec3(1.8+r.x,0.7+q)
-		color=pow(color, vec3(1.5)); // contrast def.5 like .8
-
-    vec4 finalcolor = vec4(color,1.);
-    finalcolor = brightnessMatrix( brightness ) *
-        		contrastMatrix( contrast ) *
-        		saturationMatrix( saturation ) *
-        		finalcolor;
-
-    gl_FragColor = vec4(color,1.);
-}
-
-`
-const vert = `
-//standard vertex shader
-#ifdef GL_ES
-      precision highp float;
-    #endif
-		#extension GL_OES_standard_derivatives : enable
-    // attributes, in
-    attribute vec3 aPosition;
-    attribute vec3 aNormal;
-    attribute vec2 aTexCoord;
-    attribute vec4 aVertexColor;
-
-    // attributes, out
-    varying vec3 var_vertPos;
-    varying vec4 var_vertCol;
-    varying vec3 var_vertNormal;
-    varying vec2 var_vertTexCoord;
-
-    // matrices
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-    uniform mat3 uNormalMatrix;
-
-    void main() {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * vec4(aPosition, 1.0);
-
-      // just passing things through
-      var_vertPos      = aPosition;
-      var_vertCol      = aVertexColor;
-      var_vertNormal   = aNormal;
-      var_vertTexCoord = aTexCoord;
-    }
-`;
-/// Shader 1 blurring hypnagogias
-const frag1 = `
-	#ifdef GL_ES
-	precision mediump float;
-	#endif
-
-  #define PI 3.141592653589793
-  #define TAU 6.283185307179586
-
-	uniform vec2 u_resolution;
-	uniform vec2 u_mouse;
-	uniform float u_time;
-	uniform sampler2D tex0;
-  uniform float u_splash;
-  uniform float u_mousestrength;
-
-	varying vec2 vTexCoord;
-
-#define pow2(x) (x * x)
-
-const int samples = 8;
-const float sigma = float(samples) * 0.25;
-
-float gaussian(vec2 i) {
-    return 1.0 / (2.0 * PI * pow2(sigma)) * exp(-((pow2(i.x) + pow2(i.y)) / (2.0 * pow2(sigma))));
-}
-
-vec3 blur(sampler2D sp, vec2 uv, vec2 scale) {
-    vec3 col = vec3(0.0);
-    float accum = 0.0;
-    float weight;
-    vec2 offset;
-
-    for (int x = -samples / 2; x < samples / 2; ++x) {
-        for (int y = -samples / 2; y < samples / 2; ++y) {
-            offset = vec2(x, y);
-            weight = gaussian(offset);
-            col += texture2D(sp, uv + scale * offset).rgb * weight;
-            accum += weight;
-        }
-    }
-
-    return col / accum;
-}
-
-
-	float rand(vec2 c){
-		return fract(sin(dot(c.xy ,vec2(12.9898,78.233))) * 43758.5453);
-	}
-
-	//	Classic Perlin 3D Noise
-	//	by Stefan Gustavson
-	//
-	vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
-	vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
-	vec3 fade(vec3 t) {return t*t*t*(t*(t*6.0-15.0)+10.0);}
-
-	float cnoise(vec3 P){
-		vec3 Pi0 = floor(P); // Integer part for indexing
-		vec3 Pi1 = Pi0 + vec3(1.0); // Integer part + 1
-		Pi0 = mod(Pi0, 289.0);
-		Pi1 = mod(Pi1, 289.0);
-		vec3 Pf0 = fract(P); // Fractional part for interpolation
-		vec3 Pf1 = Pf0 - vec3(1.0); // Fractional part - 1.0
-		vec4 ix = vec4(Pi0.x, Pi1.x, Pi0.x, Pi1.x);
-		vec4 iy = vec4(Pi0.yy, Pi1.yy);
-		vec4 iz0 = Pi0.zzzz;
-		vec4 iz1 = Pi1.zzzz;
-
-		vec4 ixy = permute(permute(ix) + iy);
-		vec4 ixy0 = permute(ixy + iz0);
-		vec4 ixy1 = permute(ixy + iz1);
-
-		vec4 gx0 = ixy0 / 7.0;
-		vec4 gy0 = fract(floor(gx0) / 7.0) - 0.5;
-		gx0 = fract(gx0);
-		vec4 gz0 = vec4(0.5) - abs(gx0) - abs(gy0);
-		vec4 sz0 = step(gz0, vec4(0.0));
-		gx0 -= sz0 * (step(0.0, gx0) - 0.5);
-		gy0 -= sz0 * (step(0.0, gy0) - 0.5);
-
-		vec4 gx1 = ixy1 / 7.0;
-		vec4 gy1 = fract(floor(gx1) / 7.0) - 0.5;
-		gx1 = fract(gx1);
-		vec4 gz1 = vec4(0.5) - abs(gx1) - abs(gy1);
-		vec4 sz1 = step(gz1, vec4(0.0));
-		gx1 -= sz1 * (step(0.0, gx1) - 0.5);
-		gy1 -= sz1 * (step(0.0, gy1) - 0.5);
-
-		vec3 g000 = vec3(gx0.x,gy0.x,gz0.x);
-		vec3 g100 = vec3(gx0.y,gy0.y,gz0.y);
-		vec3 g010 = vec3(gx0.z,gy0.z,gz0.z);
-		vec3 g110 = vec3(gx0.w,gy0.w,gz0.w);
-		vec3 g001 = vec3(gx1.x,gy1.x,gz1.x);
-		vec3 g101 = vec3(gx1.y,gy1.y,gz1.y);
-		vec3 g011 = vec3(gx1.z,gy1.z,gz1.z);
-		vec3 g111 = vec3(gx1.w,gy1.w,gz1.w);
-
-		vec4 norm0 = taylorInvSqrt(vec4(dot(g000, g000), dot(g010, g010), dot(g100, g100), dot(g110, g110)));
-		g000 *= norm0.x;
-		g010 *= norm0.y;
-		g100 *= norm0.z;
-		g110 *= norm0.w;
-		vec4 norm1 = taylorInvSqrt(vec4(dot(g001, g001), dot(g011, g011), dot(g101, g101), dot(g111, g111)));
-		g001 *= norm1.x;
-		g011 *= norm1.y;
-		g101 *= norm1.z;
-		g111 *= norm1.w;
-
-		float n000 = dot(g000, Pf0);
-		float n100 = dot(g100, vec3(Pf1.x, Pf0.yz));
-		float n010 = dot(g010, vec3(Pf0.x, Pf1.y, Pf0.z));
-		float n110 = dot(g110, vec3(Pf1.xy, Pf0.z));
-		float n001 = dot(g001, vec3(Pf0.xy, Pf1.z));
-		float n101 = dot(g101, vec3(Pf1.x, Pf0.y, Pf1.z));
-		float n011 = dot(g011, vec3(Pf0.x, Pf1.yz));
-		float n111 = dot(g111, Pf1);
-
-		vec3 fade_xyz = fade(Pf0);
-		vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
-		vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
-		float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x);
-		return 2.2 * n_xyz;
-	}
-
-
-	void main(){
-
-		vec2 st = vTexCoord;
-		vec2 stDistorted = st*1.0001+vec2(cnoise(vec3(vTexCoord*500.,u_time*2.)),
-															 cnoise(vec3(vTexCoord*500.,u_time*2.+100.)))*0.12
-												;
-
- 		st.y = 1.0 - st.y;
- 		stDistorted.y = 1.0 - stDistorted.y;
-		vec3 color = vec3(0.);
-
-		vec3 tex = blur(tex0,st,vec2(0.01));
-		// vec4 texg = texture2D(tex0,sin(st*30.+u_time)*st);
-		// vec4 texb = texture2D(tex0,sin(st*20.+u_time)*st);
-
-		float d = distance(stDistorted,u_mouse);
-		float d2 = distance(stDistorted,u_mouse+vec2(cos(u_time),sin(u_time))*0.1 );
-		float d3 = distance(stDistorted,u_mouse+vec2(cos(u_time+PI),sin(u_time+PI))*0.1);
-
-    // u_mouse control
-		// color.r+=smoothstep(0.1+sin(u_time+.1)*0.05,0.01,d)*(sin(u_time*1.)+1.) ;
-		// color.g+=smoothstep(0.1+sin(u_time*1.5+.2)*0.05,0.02,d2)*(sin(u_time*2.)+1.);
-		// color.b+=smoothstep(0.1+sin(u_time*5.+.3)*0.05,0.03,d3)*(sin(u_time*3.)+1.);
-
-//connecting to a boolean, over 1 is true, else false, green is scaled to .6
- if (u_splash>1.){
-    color.r+=u_mousestrength*(smoothstep(0.1+sin(u_time+.1)*0.05,0.01,d)*(sin(u_time*1.)+1.)) ;
-    color.g+=(u_mousestrength*.6)*(smoothstep(0.1+sin(u_time*1.5+.2)*0.05,0.02,d2)*(sin(u_time*2.)+1.));
-    color.b+=(u_mousestrength*.9)*(smoothstep(0.1+sin(u_time*5.+.3)*0.05,0.03,d3)*(sin(u_time*3.)+1.));
-}
-
-
-		color += tex*0.9999*(1.+cnoise(vec3((stDistorted	 -vec2(0,0.5)	)*20.,u_time+st.x+st.y))/10.);
-
-// speed of color extinction
-		color*=0.9995;
-
-		// color.r+=cnoise(vec3(st,u_time))*0.1;
-		if (color.r<0.005){
-			color.r=0.;
-		}
-		if (color.g<0.005){
-			color.g=0.;
-		}
-		if (color.b<0.005){
-			color.b=0.;
-		}
-		gl_FragColor= vec4(color,1.0);
-	}
-`
-const vert1 = `
-// vert file and comments from adam ferriss
-// https://github.com/aferriss/p5jsShaderExamples
-
-// our vertex data
-attribute vec3 aPosition;
-attribute vec2 aTexCoord;
-
-// lets get texcoords just for fun!
-varying vec2 vTexCoord;
-
-void main() {
-  // copy the texcoords
-  vTexCoord = aTexCoord;
-
-  // copy the position data into a vec4, using 1.0 as the w component
-  vec4 positionVec4 = vec4(aPosition, 1.0);
-  positionVec4.xy = positionVec4.xy * 2.0 - 1.0;
-
-  // send the vertex information on to the fragment shader
-  gl_Position = positionVec4;
-}
-`;
 /// Shader 2 modified conwaynoise
 const vert2 = `
 		attribute vec3 aPosition;
