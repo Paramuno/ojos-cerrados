@@ -4,7 +4,7 @@ Cómo ver con los ojos cerrados
 
 **Visitar interfaz: [http://👽🔥.ml](http://👽🔥.ml)**
 
-![Image 1](/images/Doa3.png)
+![Image 2](/images/table1.png)
 
 x | INDEX
 ------------ | -------------
@@ -19,6 +19,8 @@ x | [Archivo](http://👽🔥.ml)
 > o `cronogramáticas | vulnerabilidad | formalización | prospecto/prospección | efeméredes `
 > o `ritmo | ruido | immediatez | encantamiento | cosmotécnica | rito | juego | gesto | textura temporal`
 > o `prototipo | deuterotipo | modelado | clonado | predicción | simulación | continuo no-estándar | resolución | correlación | corrección | (¿␚?)`
+
+![Image 1](/images/Doa3.png)
 
 [1]: https://www.diva-portal.org/smash/get/diva2:836227/FULLTEXT01.pdf
 [2]: http://shubhamjain.github.io/whistlerr/
