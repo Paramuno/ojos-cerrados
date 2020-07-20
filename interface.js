@@ -50,11 +50,11 @@ let gl, noctaves, c, sourceCanvas, lifeSeed
 let saladmode = false
 
 function setup() {
-  if (windowHeight > (windowWidth * 1.4)) {
-    windowWidth *= .5
-    windowHeight *= .5
-    document.querySelector('meta[name="viewport"]').content = "initial-scale=0.5"
-  }
+  // if (windowHeight > (windowWidth * 1.4)) {
+  //   windowWidth *= .5
+  //   windowHeight *= .5
+  //   document.querySelector('meta[name="viewport"]').content = "initial-scale=0.5"
+  // }
   createCanvas(windowWidth, windowHeight - 4)
   texShader = createGraphics(windowWidth, windowHeight - 4, WEBGL)
   texShader1 = createGraphics(windowWidth, windowHeight - 4, WEBGL)
@@ -155,8 +155,8 @@ function draw() {
   if (getAudioContext().state !== 'running') { // If audio context is running
     drawTitle()
   } else if (!saladmode) {
-    (height < (width * 1.4)) ? drawShader(): background(38, 29, 29)
-    //drawShader()
+    //(height < (width * 1.4)) ? drawShader(): background(38, 29, 29)
+    drawShader()
     imageMode(CENTER)
     for (let i = 0; i < floaters.length; i++) { //drawing all floaters in the array
       drawFloaters(floaters[i], i * 100, i) //passing floaterimg noiseseed and index
@@ -168,7 +168,8 @@ function draw() {
     }
     whistlingArray.push(0) // cleaning Buffer
     whistlingArray.shift()
-    if (height < (width * 1.4)) drawShader1()
+    //if (height < (width * 1.4)) drawShader1()
+    drawShader1()
     if (whistling && !loosening) {
       spectrum = fft.analyze()
       spectralCentroid = fft.getCentroid()

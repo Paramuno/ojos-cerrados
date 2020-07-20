@@ -21,16 +21,20 @@
   <script src="libraries/p5.sound.min.js"></script>
   <script src="libraries/bezier.js"></script>
   <script src="data/textos.js"></script>
-  <script src="sketchLite.js"></script>
+  <script>
+  let head = document.getElementsByTagName('head')[0]
+  let js = document.createElement("script")
+  js.type = "text/javascript";
+  (window.innerHeight > (window.innerWidth * 1.4)) ?  js.src = "interfaceMobile.js" : js.src = "interface.js";
+  head.appendChild(js);
+  </script>
   </div>
 </head>
 
 <body onload="alertSmallbrowsers()">
   <script>
     function alertSmallbrowsers() {
-      if (windowWidth < 600 || windowHeight < 200) {
-        alert("Agranda tu navegador y refresca para ver toda la interfaz - Please resize your browser and refresh to see the whole interface");
-      }
+      if (windowWidth < 600 || windowHeight < 200) alert("Agranda tu navegador y refresca para ver toda la interfaz - Please resize your browser and refresh to see the whole interface")
     }
     whistlerr.setConfig({
       sampleThreshold: 2
