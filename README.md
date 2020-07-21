@@ -2,16 +2,16 @@ Cómo ver con los ojos cerrados
 =========
 *Bitácora web para proyecto de grado en Artes Plásticas - Universidad Nacional de Colombia*, Miguel Angel Rodríguez
 
-**Visitar interfaz: [http://👽🔥.ml](http://👽🔥.ml)**
+**Visitar interfaz del archivo: [http://👽🔥.ml](http://👽🔥.ml)**
 
 ![Image 2](/images/table1.png)
 
 x | INDEX
 ------------ | -------------
 x | Agradecimientos
-x | Gesto performático
-x | Anexos
+x | Diagramas
 x | [Archivo](http://👽🔥.ml)
+x | [Anexos](https://antropizado.ml/anexos)
 > `manejo del tiempo | orientación corporal | futuralidad | indeterminación, irreversibilidad, perduración`
 > o `sujeto | producción | ethos | askesis | intención | decisión | telos | prescripción | entrenamiento`
 > o `silbido| ecolocación | PATH | instrumentalización | repercusión | retroalimentacióm | inefabilidad`
