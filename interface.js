@@ -33,6 +33,8 @@ let tyRwalk = 0
 let iStrFound = [] //Array with the indexes of found strings
 let inLinkzone = false // Word displayed and mouse inside link zone?
 let currLink
+let tooltipOpacity = 0
+let tooltipCount = 0
 
 function preload() {
   loosejson = loadJSON("data/loosejson.json")
@@ -52,6 +54,7 @@ function preload() {
 //Shaders variables
 let gl, noctaves, c, sourceCanvas, lifeSeed
 let saladmode = false
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight - 4)
@@ -175,13 +178,22 @@ function draw() {
       sqInterpolatebpointArray2D(testknots)
       drawKeywords2D(true, floor(random(keyWords[zone2D].s.length)))
       whistling = false // reset whistling
-    } else if (looseknot) { // if lknot active
+      tooltipOpacity = 0 // reset opacity of tooltip
+    } else if (looseknot) { // if looseknot active
       interpolatetoLooseKnot(loosejson) // interpolate until the knot is loose
       drawKeywords2D(false, chosenWordBuffer); // use the last randomly chosen word
       //(isBetween(mouseX,width*.3,width*.7, true) && isBetween(mouseY,height*.1,height*.17,true)) ? cursor(HAND) : cursor(CROSS)
-      if (chosenWordBuffer != undefined){
-        if(mouseX<(width*.7)){ // nesting conditional for performance (?)
-          if(mouseX>(width*.3) && mouseY>(height*.1) && mouseY<(height*.17)){
+      if (chosenWordBuffer != undefined) {
+        if (tooltipCount < 2) { // tooltip shows up for the first 2 link click counts
+          textSize(height/60)
+          textStyle(ITALIC)
+          fill(252, 183, 71, tooltipOpacity)
+          tooltipOpacity++ // tooltip fades in every time
+          text(`click a la palabra para acceder a alguna de sus instancias dentro del archivo
+↓`, width / 2, height * .05)
+        }
+        if (mouseX < (width * .7)) { // nesting conditional for performance (?)
+          if (mouseX > (width * .3) && mouseY > (height * .1) && mouseY < (height * .17)) {
             cursor(HAND)
             inLinkzone = true
           } else {
@@ -412,6 +424,7 @@ function drawKeywords2D(arewewhistling, choose) {
   fill(200)
   noStroke()
   textAlign(CENTER)
+  textStyle(NORMAL)
   if (zone2D != undefined) { //if zone2D is defined, draw chosen keyword, else draw the buffer keyword
     if (arewewhistling) {
       text(keyWords[zone2D].s[choose], width / 2, height * .15)
@@ -774,7 +787,10 @@ function mousePressed() { //Activate audio, Points activate with a click before 
     }
   }
   if (saladmode && (mouseY > (height - 50))) saladmode = false
-  if (inLinkzone) window.open(currLink)
+  if (inLinkzone) {
+    tooltipCount++
+    window.open(currLink)
+  }
 }
 
 function windowResized() {
