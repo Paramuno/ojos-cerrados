@@ -31,10 +31,13 @@ let tyRwalk = 0
 
 //text variables
 let iStrFound = [] //Array with the indexes of found strings
+let inLinkzone = false // Word displayed and mouse inside link zone?
+let currLink
 
 function preload() {
   loosejson = loadJSON("data/loosejson.json")
   keyWords = loadJSON("data/WordSets.json")
+  keyLinks = loadJSON("data/LinkSets.json")
   lifeSeed = loadImage("images/Lifeseed.png")
   cvcloc = loadImage("images/cvcloc.png")
   for (let i = 0; i < 6; i++) { //initalizing 6 floater bois and pushing random rotations in a matching array
@@ -174,9 +177,21 @@ function draw() {
       whistling = false // reset whistling
     } else if (looseknot) { // if lknot active
       interpolatetoLooseKnot(loosejson) // interpolate until the knot is loose
-      drawKeywords2D(false, chosenWordBuffer) // use the last randomly chosen word
+      drawKeywords2D(false, chosenWordBuffer); // use the last randomly chosen word
+      //(isBetween(mouseX,width*.3,width*.7, true) && isBetween(mouseY,height*.1,height*.17,true)) ? cursor(HAND) : cursor(CROSS)
+      if (chosenWordBuffer != undefined){
+        if(mouseX<(width*.7)){ // nesting conditional for performance (?)
+          if(mouseX>(width*.3) && mouseY>(height*.1) && mouseY<(height*.17)){
+            cursor(HAND)
+            inLinkzone = true
+          } else {
+            cursor(CROSS)
+            inLinkzone = false
+          }
+        }
+      }
     }
-    drawFoundtext2D()
+    //drawFoundtext2D()
     //print('amp:' + sound.getLevel())
   } else {
     wordSalad()
@@ -273,13 +288,7 @@ function drawTitle() {
   textAlign(CENTER)
   fill(255)
   text('🎤 Click para activar micrófono, silba para navegar', 5 + (width / 2), 5 + (height / 2))
-  image(cvcloc, (width/2)-180,(height/2)-300)
-  // textSize(11 + (height / 40))
-  // fill(105, 2, 2)
-  // text('Cómo ver con los ojos cerrados', (width / 2) + txRwalk, (height * .45) + tyRwalk)
-  // textSize(11 + (height / 40))
-  // fill(255, 175)
-  // text('Cómo ver con los ojos cerrados', (width / 2), (height * .45))
+  image(cvcloc, (width / 2) - 180, (height / 2) - 300)
   let fac = .1
   txRwalk += map(random(), 0, 1, -fac, fac)
   tyRwalk += map(random(), 0, 1, -fac, fac)
@@ -406,8 +415,10 @@ function drawKeywords2D(arewewhistling, choose) {
   if (zone2D != undefined) { //if zone2D is defined, draw chosen keyword, else draw the buffer keyword
     if (arewewhistling) {
       text(keyWords[zone2D].s[choose], width / 2, height * .15)
+      currLink = keyLinks[zone2D].s[choose]
     } else if (chosenWordBuffer != undefined) {
       text(keyWords[zone2D].s[chosenWordBuffer], width / 2, height * .15)
+      currLink = keyLinks[zone2D].s[chosenWordBuffer]
     }
   }
 }
@@ -763,6 +774,7 @@ function mousePressed() { //Activate audio, Points activate with a click before 
     }
   }
   if (saladmode && (mouseY > (height - 50))) saladmode = false
+  if (inLinkzone) window.open(currLink)
 }
 
 function windowResized() {
