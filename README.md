@@ -1,6 +1,6 @@
 Cómo ver con los ojos cerrados
 =========
-*Bitácora web para proyecto de grado en Artes Plásticas - Universidad Nacional de Colombia*, Miguel Angel Rodríguez
+*Bitácora web - Universidad Nacional de Colombia*, Miguel Angel Rodríguez
 
 **Visitar interfaz del archivo: [http://👽🔥.ml](http://👽🔥.ml)**
 
