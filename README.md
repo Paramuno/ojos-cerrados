@@ -1,6 +1,6 @@
 Cómo ver con los ojos cerrados
 =========
-*Bitácora web - Universidad Nacional de Colombia*, Miguel Angel Rodríguez
+*Bitácora web - Universidad Nacional de Colombia**
 
 **Visitar interfaz del archivo: [http://👽🔥.ml](http://👽🔥.ml)**
 
